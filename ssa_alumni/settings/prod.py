@@ -27,7 +27,7 @@ connector = Connector()
 def getconn():
     conn = connector.connect(
         os.environ.get("DB_HOST").replace("/cloudsql/", ""), # Connection name
-        "pg8000",
+        "psycopg2",
         user=os.environ.get("DB_USER"),
         db=os.environ.get("DB_NAME"),
         enable_iam_auth=True,

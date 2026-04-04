@@ -31,6 +31,10 @@ COPY --from=builder /install /usr/local
 # Copy application source
 COPY . .
 
+# Create non-root user for security
+RUN useradd -m django-user && chown -R django-user:django-user /app
+USER django-user
+
 # Collect static files (SECRET_KEY placeholder only needed at build time)
 RUN SECRET_KEY=build-time-placeholder \
     DJANGO_SETTINGS_MODULE=ssa_alumni.settings.prod \
@@ -45,3 +49,4 @@ CMD exec gunicorn \
     --threads 8 \
     --timeout 0 \
     ssa_alumni.wsgi:application
+
