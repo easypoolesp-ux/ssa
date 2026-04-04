@@ -31,7 +31,7 @@ def getconn():
         user=os.environ.get("DB_USER"),
         db=os.environ.get("DB_NAME"),
         enable_iam_auth=True,
-        ip_type=IPTypes.PUBLIC
+        ip_type=IPTypes.PRIVATE
     )
 
 DATABASES = {
