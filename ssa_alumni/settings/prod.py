@@ -27,7 +27,7 @@ connector = Connector()
 def getconn():
     conn = connector.connect(
         os.environ.get("DB_HOST").replace("/cloudsql/", ""), # Connection name
-        "psycopg2",
+        "pg8000",
         user=os.environ.get("DB_USER"),
         db=os.environ.get("DB_NAME"),
         enable_iam_auth=True,
@@ -44,20 +44,15 @@ DATABASES = {
         "HOST": "",
         "PORT": "",
         "CONN_MAX_AGE": 600,
+        "OPTIONS": {
+            "sslmode": "disable",
+        },
     }
 }
 
-# Inject the connector's getconn function into Django's connection logic
-# For pg8000, we use a slightly different injection or just use the connector natively
-# Actually, the connector documentation recommends using the 'creator' argument in DATABASES
-DATABASES["default"]["ENGINE"] = "django.db.backends.postgresql"
-DATABASES["default"]["OPTIONS"] = {
-    "sslmode": "disable",
-}
-# We use the 'creator' parameter to pass the getconn function
-# However, Django's postgres backend doesn't support 'creator' directly in settings.
-# So we stick to the monkeypatch but update it for pg8000.
-from django.db.backends.postgresql.base import DatabaseWrapper
-DatabaseWrapper.get_new_connection = lambda self, conn_params: getconn()
+# Use the 'creator' parameter to pass the getconn function
+# This is the standard way to use the connector with Django
+DATABASES["default"]["OPTIONS"]["creator"] = getconn
+
 
 
