@@ -9,8 +9,8 @@ from google.cloud.sql.connector import Connector, IPTypes
 
 DEBUG = False
 
-# Restrict to Cloud Run service URL (set via env var after first deploy)
-CLOUD_RUN_URL = os.environ.get("CLOUD_RUN_URL", "")  # noqa: F405
+# Restrict to Cloud Run service URL
+CLOUD_RUN_URL = os.environ.get("CLOUD_RUN_URL", "ssa-alumni-dev-m5bdpqwnfq-el.a.run.app")  # noqa: F405
 ALLOWED_HOSTS = [CLOUD_RUN_URL, "localhost"] if CLOUD_RUN_URL else ["*"]
 
 # CSRF — trust Cloud Run service URL
