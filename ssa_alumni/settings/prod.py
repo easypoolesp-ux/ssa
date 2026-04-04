@@ -21,38 +21,18 @@ SECURE_SSL_REDIRECT     = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # --- Cloud SQL IAM Authentication ---
-# Initialize Cloud SQL Connector
-connector = Connector()
-
-def getconn():
-    conn = connector.connect(
-        os.environ.get("DB_HOST").replace("/cloudsql/", ""), # Connection name
-        "pg8000",
-        user=os.environ.get("DB_USER"),
-        db=os.environ.get("DB_NAME"),
-        enable_iam_auth=True,
-        ip_type=IPTypes.PUBLIC
-    )
-    return conn
-
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": "ssa_alumni.db_engine", # Use our custom engine
         "NAME": os.environ.get("DB_NAME"),
         "USER": os.environ.get("DB_USER"),
         "PASSWORD": "",
         "HOST": "",
         "PORT": "",
         "CONN_MAX_AGE": 600,
-        "OPTIONS": {
-            "sslmode": "disable",
-        },
     }
 }
 
-# Use the 'creator' parameter to pass the getconn function
-# This is the standard way to use the connector with Django
-DATABASES["default"]["OPTIONS"]["creator"] = getconn
 
 
 
