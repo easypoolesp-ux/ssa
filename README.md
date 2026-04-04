@@ -51,8 +51,8 @@ This project uses **Workload Identity Federation** for secure, passwordless depl
 ### Setup Instructions:
 1.  Go to your GitHub repository settings → **Secrets and variables** → **Actions**.
 2.  Add the following **Repository Secrets**:
-    *   `WIF_PROVIDER`: `projects/222076803846/locations/global/workloadIdentityPools/ssa-alumni-github-pool/providers/ssa-alumni-github-provider`
-    *   `WIF_SERVICE_ACCOUNT`: `ssa-alumni-dev-run-sa@project-05588bf2-f685-4769-a37.iam.gserviceaccount.com`
+    *   `WIF_PROVIDER`: `projects/685527496529/locations/global/workloadIdentityPools/ssa-alumni-github-pool/providers/ssa-alumni-github-provider`
+    *   `WIF_SERVICE_ACCOUNT`: `ssa-alumni-dev-run-sa@ssa-alumni.iam.gserviceaccount.com`
 
 Once these secrets are added, any push to `main` or `master` will automatically build and deploy the backend to Cloud Run.
 
