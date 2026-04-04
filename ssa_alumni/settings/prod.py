@@ -1,4 +1,4 @@
-# Triggering deployment with Project Viewer role
+# Final deployment attempt with all permissions applied
 # =============================================================================
 # Django — Production Settings
 # Responsibility: Cloud Run / Cloud SQL production overrides
