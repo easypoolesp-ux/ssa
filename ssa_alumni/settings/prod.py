@@ -1,4 +1,4 @@
-# Triggering new deployment with updated IAM roles
+# Triggering deployment with log viewing permissions
 # =============================================================================
 # Django — Production Settings
 # Responsibility: Cloud Run / Cloud SQL production overrides
