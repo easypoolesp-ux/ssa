@@ -35,7 +35,10 @@ jobs:
 
     - name: Build and Push Docker Image
       run: |
-        gcloud builds submit . --tag ${{ env.IMAGE_NAME }}:${{ github.sha }} --project ${{ env.PROJECT_ID }}
+        gcloud builds submit . \
+          --tag ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+          --tag ${{ env.IMAGE_NAME }}:latest \
+          --project ${{ env.PROJECT_ID }}
 
     - name: Deploy to Cloud Run
       run: |
@@ -43,3 +46,14 @@ jobs:
           --image ${{ env.IMAGE_NAME }}:${{ github.sha }} \
           --region ${{ env.REGION }} \
           --project ${{ env.PROJECT_ID }}
+
+    - name: Run Migrations (Cloud Run Job)
+      run: |
+        gcloud run jobs update ${{ env.SERVICE_NAME }}-migrate \
+          --image ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+          --region ${{ env.REGION }} \
+          --project ${{ env.PROJECT_ID }}
+        gcloud run jobs execute ${{ env.SERVICE_NAME }}-migrate \
+          --region ${{ env.REGION }} \
+          --project ${{ env.PROJECT_ID }} \
+          --wait
