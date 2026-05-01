@@ -135,6 +135,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:8080",
     "https://ssa-alumni-dev-m5bdpqwnfq-el.a.run.app",
+    "https://ssa-alumni.web.app",
 ]
 CORS_ALLOW_ALL_ORIGINS = os.environ.get("CORS_ALLOW_ALL", "False") == "True"
 CORS_ALLOW_CREDENTIALS = True

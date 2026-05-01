@@ -32,7 +32,7 @@ class AlumniProfileViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['graduation_year', 'batch', 'is_verified']
+    filterset_fields = ['graduation_year', 'batch', 'is_verified', 'is_active', 'firebase_uid']
     search_fields = ['full_name', 'current_company', 'current_role']
     ordering_fields = ['graduation_year', 'full_name']
 

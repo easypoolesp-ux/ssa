@@ -16,16 +16,19 @@ class AlumniProfileSerializer(serializers.ModelSerializer):
             "email",
             "phone",
             "profile_pic",
+            "bio",
             "graduation_year",
             "batch",
             "current_company",
             "current_role",
             "linkedin_url",
             "is_verified",
+            "is_active",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "firebase_uid", "is_verified", "created_at", "updated_at"]
+        # Only backend/admin can set these — never exposed as writable to users
+        read_only_fields = ["id", "firebase_uid", "is_verified", "is_active", "created_at", "updated_at"]
 
     def validate_graduation_year(self, value):
         """Basic validation for year."""

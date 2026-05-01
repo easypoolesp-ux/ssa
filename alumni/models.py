@@ -14,6 +14,7 @@ class AlumniProfile(models.Model):
     email        = models.EmailField(unique=True)
     phone        = models.CharField(max_length=20, blank=True)
     profile_pic  = models.URLField(blank=True)
+    bio          = models.TextField(blank=True)
 
     # School details
     graduation_year = models.PositiveIntegerField()
@@ -24,8 +25,13 @@ class AlumniProfile(models.Model):
     current_role     = models.CharField(max_length=200, blank=True)
     linkedin_url     = models.URLField(blank=True)
 
-    # Meta
+    # Access control
+    # is_verified: admin has confirmed identity
+    # is_active: membership is active (set by admin after payment/approval)
     is_verified = models.BooleanField(default=False)
+    is_active   = models.BooleanField(default=False)
+
+    # Meta
     created_at  = models.DateTimeField(auto_now_add=True)
     updated_at  = models.DateTimeField(auto_now=True)
 
