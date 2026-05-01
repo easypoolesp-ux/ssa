@@ -12,11 +12,6 @@ __pycache__/
 db.sqlite3
 service.json
 
-# Exclude Docker/Build artifacts
-Dockerfile
-.dockerignore
-.gcloudignore
-
 # Exclude IDE settings
 .vscode/
 .idea/
