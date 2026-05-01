@@ -37,6 +37,18 @@ jobs:
       run: |
         gcloud builds submit . --tag ${{ env.IMAGE_NAME }}:${{ github.sha }} --project ${{ env.PROJECT_ID }}
 
+    - name: Run Database Migrations (Cloud Run Job)
+      run: |
+        gcloud run jobs update ${{ env.SERVICE_NAME }}-migrate \
+          --image ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+          --region ${{ env.REGION }} \
+          --project ${{ env.PROJECT_ID }}
+        
+        gcloud run jobs execute ${{ env.SERVICE_NAME }}-migrate \
+          --region ${{ env.REGION }} \
+          --project ${{ env.PROJECT_ID }} \
+          --wait
+
     - name: Deploy to Cloud Run
       run: |
         gcloud run services update ${{ env.SERVICE_NAME }} \
