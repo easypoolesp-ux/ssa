@@ -43,14 +43,14 @@ jobs:
     - name: Deploy to Cloud Run
       run: |
         gcloud run services update ${{ env.SERVICE_NAME }} \
-          --image ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+          --image ${{ env.IMAGE_NAME }}:latest \
           --region ${{ env.REGION }} \
           --project ${{ env.PROJECT_ID }}
 
     - name: Run Migrations (Cloud Run Job)
       run: |
         gcloud run jobs update ${{ env.SERVICE_NAME }}-migrate \
-          --image ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+          --image ${{ env.IMAGE_NAME }}:latest \
           --region ${{ env.REGION }} \
           --project ${{ env.PROJECT_ID }}
         gcloud run jobs execute ${{ env.SERVICE_NAME }}-migrate \
