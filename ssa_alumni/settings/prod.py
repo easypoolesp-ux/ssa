@@ -18,24 +18,23 @@ CSRF_TRUSTED_ORIGINS = [f"https://{CLOUD_RUN_URL}"]
 SECURE_SSL_REDIRECT     = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-# ---------------------------------------------------------------------------
-# Cloud SQL — Passwordless IAM authentication via Unix socket
-# ---------------------------------------------------------------------------
-_connector = Connector()
+import google.auth
+from google.auth.transport.requests import Request
+from django.db.backends.postgresql.base import DatabaseWrapper as PostgresDatabaseWrapper
 
+def _get_iam_token():
+    credentials, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/sqlservice.login"])
+    credentials.refresh(Request())
+    return credentials.token
 
-def _get_cloud_sql_conn():
-    """Return a psycopg connection via Cloud SQL IAM auth (no password)."""
-    instance = os.environ["DB_HOST"].replace("/cloudsql/", "")
-    return _connector.connect(
-        instance,
-        "psycopg2",
-        user=os.environ["DB_USER"],
-        db=os.environ["DB_NAME"],
-        enable_iam_auth=True,
-        ip_type=IPTypes.PRIVATE,
-    )
+_orig_get_connection_params = PostgresDatabaseWrapper.get_connection_params
 
+def _patched_get_connection_params(self):
+    params = _orig_get_connection_params(self)
+    params["password"] = _get_iam_token()
+    return params
+
+PostgresDatabaseWrapper.get_connection_params = _patched_get_connection_params
 
 # Override the base SQLite DB with Cloud SQL PostgreSQL
 DATABASES = {
@@ -44,8 +43,8 @@ DATABASES = {
         "NAME": os.environ.get("DB_NAME", "ssa_alumni_db"),
         "USER": os.environ.get("DB_USER", ""),
         "PASSWORD": "",  # Passwordless — IAM handles auth
-        "HOST": "",
-        "PORT": "",
+        "HOST": os.environ.get("DB_HOST", ""),
+        "PORT": "5432",
         "CONN_MAX_AGE": 600,
     }
 }
