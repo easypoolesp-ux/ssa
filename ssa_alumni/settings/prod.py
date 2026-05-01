@@ -6,8 +6,6 @@
 
 from .base import *  # noqa: F401, F403
 import os
-from google.cloud.sql.connector import Connector, IPTypes
-
 DEBUG = False
 
 CLOUD_RUN_URL = os.environ.get("CLOUD_RUN_URL", "ssa-alumni-dev-m5bdpqwnfq-el.a.run.app")
@@ -49,12 +47,4 @@ DATABASES = {
     }
 }
 
-# Monkeypatch Django's PostgreSQL backend to use the connector
-from django.db.backends.postgresql.base import DatabaseWrapper  # noqa: E402
 
-
-def _patched_get_new_connection(self, conn_params):  # noqa: ANN001, ANN202
-    return _get_cloud_sql_conn()
-
-
-DatabaseWrapper.get_new_connection = _patched_get_new_connection

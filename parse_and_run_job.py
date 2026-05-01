@@ -41,14 +41,14 @@ if 'volumes' in template['spec']:
             cloudsql = instances[0]
 
 cmd = [
-    "gcloud.cmd", "run", "jobs", "create", "ssa-alumni-migrate-temp",
+    "gcloud.cmd", "run", "jobs", "update", "ssa-alumni-migrate-temp",
     "--project=ssa-alumni",
     "--region=asia-south1",
     f"--image={image}",
     f"--set-env-vars={env_str}",
     f"--service-account={sa}",
-    f"--command=bash",
-    f"--args=-c,python manage.py migrate && python manage.py createsuperuser --noinput",
+    f"--command=python",
+    f"--args=manage.py,setup_admin",
 ]
 
 if secrets:
