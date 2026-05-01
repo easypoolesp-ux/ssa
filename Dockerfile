@@ -35,9 +35,9 @@ COPY . .
 RUN useradd -m django-user && chown -R django-user:django-user /app
 USER django-user
 
-# Collect static files (SECRET_KEY placeholder only needed at build time)
+# Collect static files — use base settings (no DB/GCP auth needed at build time)
 RUN SECRET_KEY=build-time-placeholder \
-    DJANGO_SETTINGS_MODULE=ssa_alumni.settings.prod \
+    DJANGO_SETTINGS_MODULE=ssa_alumni.settings.base \
     python manage.py collectstatic --noinput
 
 EXPOSE 8080
