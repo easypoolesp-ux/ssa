@@ -43,7 +43,7 @@ RUN SECRET_KEY=build-time-placeholder \
 EXPOSE 8080
 
 # gunicorn: 2 workers per CPU, 1 thread, timeout 0 for Cloud Run
-CMD python manage.py migrate && exec gunicorn \
+CMD exec gunicorn \
     --bind "0.0.0.0:${PORT}" \
     --workers 2 \
     --threads 8 \
