@@ -8,13 +8,11 @@ FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
-# System deps for psycopg2 compilation (using binary avoids this, but kept for safety)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+# We use psycopg2-binary, so we don't need build-essential/libpq-dev
+# but keep apt-get update for safety if needed later.
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+RUN pip install --no-cache-dir --root-user-action=ignore --prefix=/install -r requirements.txt
 
 # ── Stage 2: runtime image ──────────────────────────────────────────────────
 FROM python:3.12-slim AS runtime
