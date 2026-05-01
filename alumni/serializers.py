@@ -22,6 +22,7 @@ class AlumniProfileSerializer(serializers.ModelSerializer):
             "current_company",
             "current_role",
             "linkedin_url",
+            "current_city",
             "is_verified",
             "is_active",
             "created_at",

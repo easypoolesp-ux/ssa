@@ -24,6 +24,7 @@ class AlumniProfile(models.Model):
     current_company  = models.CharField(max_length=200, blank=True)
     current_role     = models.CharField(max_length=200, blank=True)
     linkedin_url     = models.URLField(blank=True)
+    current_city     = models.CharField(max_length=100, blank=True)
 
     # Access control
     # is_verified: admin has confirmed identity
