@@ -11,7 +11,7 @@ from google.cloud.sql.connector import Connector, IPTypes
 DEBUG = False
 
 CLOUD_RUN_URL = os.environ.get("CLOUD_RUN_URL", "ssa-alumni-dev-m5bdpqwnfq-el.a.run.app")
-ALLOWED_HOSTS = [CLOUD_RUN_URL, "localhost"]  # noqa: F405
+ALLOWED_HOSTS = ["*"]  # Trust Cloud Run routing for now to avoid DisallowedHost error
 
 CSRF_TRUSTED_ORIGINS = [f"https://{CLOUD_RUN_URL}"]
 
@@ -29,7 +29,7 @@ def _get_cloud_sql_conn():
     instance = os.environ["DB_HOST"].replace("/cloudsql/", "")
     return _connector.connect(
         instance,
-        "psycopg",
+        "psycopg2",
         user=os.environ["DB_USER"],
         db=os.environ["DB_NAME"],
         enable_iam_auth=True,

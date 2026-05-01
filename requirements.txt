@@ -9,14 +9,14 @@ django-cors-headers>=4.3
 django-filter>=23.0
 
 # --- Database ---
-psycopg[binary]>=3.1.18
+psycopg2-binary>=2.9.9
 
 # --- Server ---
 gunicorn>=21.0
 whitenoise>=6.6
 
 # --- GCP / Cloud SQL ---
-cloud-sql-python-connector[psycopg]>=1.15.0
+cloud-sql-python-connector[psycopg2]>=1.15.0
 
 # --- Firebase Auth ---
 firebase-admin>=6.5
