@@ -5,6 +5,32 @@ from .models import AlumniProfile
 
 
 class AlumniProfileSerializer(serializers.ModelSerializer):
+    """Standard ModelSerializer for AlumniProfile."""
+    
     class Meta:
-        model  = AlumniProfile
-        fields = "__all__"
+        model = AlumniProfile
+        fields = [
+            "id",
+            "firebase_uid",
+            "full_name",
+            "email",
+            "phone",
+            "profile_pic",
+            "graduation_year",
+            "batch",
+            "current_company",
+            "current_role",
+            "linkedin_url",
+            "is_verified",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "firebase_uid", "is_verified", "created_at", "updated_at"]
+
+    def validate_graduation_year(self, value):
+        """Basic validation for year."""
+        import datetime
+        current_year = datetime.date.today().year
+        if value < 1900 or value > current_year + 5:
+            raise serializers.ValidationError("Please provide a valid graduation year.")
+        return value

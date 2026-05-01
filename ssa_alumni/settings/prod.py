@@ -1,7 +1,7 @@
-# Final deployment attempt with all permissions applied
 # =============================================================================
 # Django — Production Settings
-# Responsibility: Cloud Run / Cloud SQL production overrides
+# Responsibility: Cloud Run / Cloud SQL overrides ONLY.
+#                 Passwordless IAM auth, HTTPS enforcement.
 # =============================================================================
 
 from .base import *  # noqa: F401, F403
@@ -10,51 +10,52 @@ from google.cloud.sql.connector import Connector, IPTypes
 
 DEBUG = False
 
-# Restrict to Cloud Run service URL
-CLOUD_RUN_URL = os.environ.get("CLOUD_RUN_URL", "ssa-alumni-dev-685527496529.asia-south1.run.app")  # noqa: F405
-ALLOWED_HOSTS = [CLOUD_RUN_URL, "localhost"] if CLOUD_RUN_URL else ["*"]
+CLOUD_RUN_URL = os.environ.get("CLOUD_RUN_URL", "ssa-alumni-dev-m5bdpqwnfq-el.a.run.app")
+ALLOWED_HOSTS = [CLOUD_RUN_URL, "localhost"]  # noqa: F405
 
-# CSRF — trust Cloud Run service URL
-CSRF_TRUSTED_ORIGINS = [f"https://{CLOUD_RUN_URL}"] if CLOUD_RUN_URL else []
+CSRF_TRUSTED_ORIGINS = [f"https://{CLOUD_RUN_URL}"]
 
 SECURE_SSL_REDIRECT     = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-# --- Cloud SQL IAM Authentication ---
-# Initialize Cloud SQL Connector
-connector = Connector()
+# ---------------------------------------------------------------------------
+# Cloud SQL — Passwordless IAM authentication via Unix socket
+# ---------------------------------------------------------------------------
+_connector = Connector()
 
-def getconn():
-    return connector.connect(
-        os.environ.get("DB_HOST").replace("/cloudsql/", ""), # Connection name
+
+def _get_cloud_sql_conn():
+    """Return a psycopg connection via Cloud SQL IAM auth (no password)."""
+    instance = os.environ["DB_HOST"].replace("/cloudsql/", "")
+    return _connector.connect(
+        instance,
         "psycopg",
-        user=os.environ.get("DB_USER"),
-        db=os.environ.get("DB_NAME"),
+        user=os.environ["DB_USER"],
+        db=os.environ["DB_NAME"],
         enable_iam_auth=True,
-        ip_type=IPTypes.PRIVATE
+        ip_type=IPTypes.PRIVATE,
     )
 
+
+# Override the base SQLite DB with Cloud SQL PostgreSQL
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME"),
-        "USER": os.environ.get("DB_USER"),
-        "PASSWORD": "",
+        "NAME": os.environ.get("DB_NAME", "ssa_alumni_db"),
+        "USER": os.environ.get("DB_USER", ""),
+        "PASSWORD": "",  # Passwordless — IAM handles auth
         "HOST": "",
         "PORT": "",
         "CONN_MAX_AGE": 600,
     }
 }
 
-# Robust monkeypatch: Intercept the connection before Django tries to use psycopg2
-from django.db.backends.postgresql.base import DatabaseWrapper
-
-def patched_get_new_connection(self, conn_params):
-    return getconn()
-
-DatabaseWrapper.get_new_connection = patched_get_new_connection
+# Monkeypatch Django's PostgreSQL backend to use the connector
+from django.db.backends.postgresql.base import DatabaseWrapper  # noqa: E402
 
 
+def _patched_get_new_connection(self, conn_params):  # noqa: ANN001, ANN202
+    return _get_cloud_sql_conn()
 
 
-
+DatabaseWrapper.get_new_connection = _patched_get_new_connection

@@ -6,6 +6,9 @@ from django.db import models
 class AlumniProfile(models.Model):
     """Core alumni record for the school directory."""
 
+    # Firebase Auth linking
+    firebase_uid = models.CharField(max_length=128, unique=True, null=True, blank=True)
+
     # Personal
     full_name    = models.CharField(max_length=200)
     email        = models.EmailField(unique=True)

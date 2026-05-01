@@ -1,0 +1,366 @@
+openapi: 3.0.3
+info:
+  title: SSA Alumni API
+  version: 1.0.0
+  description: REST API for the SSA Alumni school directory. Authentication via Firebase
+    JWT (Bearer token).
+  contact:
+    name: SSA Team
+  license:
+    name: Private
+paths:
+  /api/v1/alumni/profiles/:
+    get:
+      operationId: v1_alumni_profiles_list
+      description: |-
+        Standard out-of-the-box Django ModelViewSet for Alumni Profiles.
+        Handles GET (list/detail), POST (create), PUT/PATCH (update), DELETE.
+      parameters:
+      - in: query
+        name: batch
+        schema:
+          type: string
+      - in: query
+        name: graduation_year
+        schema:
+          type: integer
+      - in: query
+        name: is_verified
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAlumniProfileList'
+          description: ''
+    post:
+      operationId: v1_alumni_profiles_create
+      description: |-
+        Standard out-of-the-box Django ModelViewSet for Alumni Profiles.
+        Handles GET (list/detail), POST (create), PUT/PATCH (update), DELETE.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlumniProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AlumniProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AlumniProfileRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlumniProfile'
+          description: ''
+  /api/v1/alumni/profiles/{id}/:
+    get:
+      operationId: v1_alumni_profiles_retrieve
+      description: |-
+        Standard out-of-the-box Django ModelViewSet for Alumni Profiles.
+        Handles GET (list/detail), POST (create), PUT/PATCH (update), DELETE.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this alumni profile.
+        required: true
+      tags:
+      - v1
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlumniProfile'
+          description: ''
+    put:
+      operationId: v1_alumni_profiles_update
+      description: |-
+        Standard out-of-the-box Django ModelViewSet for Alumni Profiles.
+        Handles GET (list/detail), POST (create), PUT/PATCH (update), DELETE.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this alumni profile.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlumniProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AlumniProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AlumniProfileRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlumniProfile'
+          description: ''
+    patch:
+      operationId: v1_alumni_profiles_partial_update
+      description: |-
+        Standard out-of-the-box Django ModelViewSet for Alumni Profiles.
+        Handles GET (list/detail), POST (create), PUT/PATCH (update), DELETE.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this alumni profile.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAlumniProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAlumniProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAlumniProfileRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlumniProfile'
+          description: ''
+    delete:
+      operationId: v1_alumni_profiles_destroy
+      description: |-
+        Standard out-of-the-box Django ModelViewSet for Alumni Profiles.
+        Handles GET (list/detail), POST (create), PUT/PATCH (update), DELETE.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this alumni profile.
+        required: true
+      tags:
+      - v1
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    AlumniProfile:
+      type: object
+      description: Standard ModelSerializer for AlumniProfile.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firebase_uid:
+          type: string
+          readOnly: true
+          nullable: true
+        full_name:
+          type: string
+          maxLength: 200
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        phone:
+          type: string
+          maxLength: 20
+        profile_pic:
+          type: string
+          format: uri
+          maxLength: 200
+        graduation_year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        batch:
+          type: string
+          maxLength: 50
+        current_company:
+          type: string
+          maxLength: 200
+        current_role:
+          type: string
+          maxLength: 200
+        linkedin_url:
+          type: string
+          format: uri
+          maxLength: 200
+        is_verified:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - batch
+      - created_at
+      - email
+      - firebase_uid
+      - full_name
+      - graduation_year
+      - id
+      - is_verified
+      - updated_at
+    AlumniProfileRequest:
+      type: object
+      description: Standard ModelSerializer for AlumniProfile.
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        phone:
+          type: string
+          maxLength: 20
+        profile_pic:
+          type: string
+          format: uri
+          maxLength: 200
+        graduation_year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        batch:
+          type: string
+          minLength: 1
+          maxLength: 50
+        current_company:
+          type: string
+          maxLength: 200
+        current_role:
+          type: string
+          maxLength: 200
+        linkedin_url:
+          type: string
+          format: uri
+          maxLength: 200
+      required:
+      - batch
+      - email
+      - full_name
+      - graduation_year
+    PaginatedAlumniProfileList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlumniProfile'
+    PatchedAlumniProfileRequest:
+      type: object
+      description: Standard ModelSerializer for AlumniProfile.
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        phone:
+          type: string
+          maxLength: 20
+        profile_pic:
+          type: string
+          format: uri
+          maxLength: 200
+        graduation_year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        batch:
+          type: string
+          minLength: 1
+          maxLength: 50
+        current_company:
+          type: string
+          maxLength: 200
+        current_role:
+          type: string
+          maxLength: 200
+        linkedin_url:
+          type: string
+          format: uri
+          maxLength: 200
+servers:
+- url: https://ssa-alumni-dev-m5bdpqwnfq-el.a.run.app
+  description: Dev
