@@ -60,6 +60,9 @@ class AlumniProfileViewSet(viewsets.ModelViewSet):
         serializer.save(firebase_uid=firebase_uid)
 
 
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
+
 # =============================================================================
 # Events
 # =============================================================================
@@ -74,6 +77,12 @@ class EventListView(APIView):
 
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    @extend_schema(
+        responses=EventListSerializer(many=True),
+        parameters=[
+            OpenApiParameter("upcoming", OpenApiTypes.BOOL, description="Filter for upcoming events only", default=True)
+        ]
+    )
     def get(self, request):
         from django.utils import timezone
         qs = Event.objects.filter(is_published=True)
@@ -94,6 +103,7 @@ class EventDetailView(APIView):
 
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    @extend_schema(responses=EventDetailSerializer)
     def get(self, request, pk):
         try:
             event = Event.objects.get(pk=pk, is_published=True)
@@ -130,6 +140,10 @@ class RSVPView(APIView):
         except Event.DoesNotExist:
             raise ValidationError({"detail": "Event not found or not published."})
 
+    @extend_schema(
+        request=RSVPSerializer,
+        responses={201: RSVPSerializer, 200: RSVPSerializer, 409: OpenApiTypes.OBJECT}
+    )
     def post(self, request, pk):
         event  = self._get_event(pk)
         alumni = self._get_alumni(request)
@@ -154,6 +168,7 @@ class RSVPView(APIView):
         http_status = status.HTTP_201_CREATED if created else status.HTTP_200_OK
         return Response(serializer.data, status=http_status)
 
+    @extend_schema(responses={204: None, 404: OpenApiTypes.OBJECT})
     def delete(self, request, pk):
         event  = self._get_event(pk)
         alumni = self._get_alumni(request)

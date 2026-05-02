@@ -6,7 +6,7 @@ Responsibility: Transform model instances ↔ validated JSON.
 
 import datetime
 from rest_framework import serializers
-
+from drf_spectacular.utils import extend_schema_field
 from .models import AlumniProfile, Event, RSVP
 
 
@@ -64,6 +64,31 @@ class EventListSerializer(serializers.ModelSerializer):
         ]
 
 
+# =============================================================================
+# RSVP
+# =============================================================================
+
+class RSVPSerializer(serializers.ModelSerializer):
+    """
+    Used for both reading an RSVP (in EventDetailSerializer)
+    and writing one (POST/PUT from the app).
+    """
+
+    alumni_name = serializers.CharField(source="alumni.full_name", read_only=True)
+
+    class Meta:
+        model  = RSVP
+        fields = [
+            "id", "event", "alumni", "alumni_name",
+            "status", "payment_status", "payment_ref",
+            "notes", "rsvp_at",
+        ]
+        read_only_fields = [
+            "id", "alumni", "alumni_name",
+            "payment_status", "payment_ref", "rsvp_at",
+        ]
+
+
 class EventDetailSerializer(serializers.ModelSerializer):
     """
     Full serializer for the event detail screen.
@@ -90,6 +115,7 @@ class EventDetailSerializer(serializers.ModelSerializer):
             "my_rsvp",
         ]
 
+    @extend_schema_field(RSVPSerializer)
     def get_my_rsvp(self, obj):
         """Return the requesting user's RSVP for this event, or None."""
         request = self.context.get("request")
@@ -103,26 +129,3 @@ class EventDetailSerializer(serializers.ModelSerializer):
             return None
 
 
-# =============================================================================
-# RSVP
-# =============================================================================
-
-class RSVPSerializer(serializers.ModelSerializer):
-    """
-    Used for both reading an RSVP (in EventDetailSerializer)
-    and writing one (POST/PUT from the app).
-    """
-
-    alumni_name = serializers.CharField(source="alumni.full_name", read_only=True)
-
-    class Meta:
-        model  = RSVP
-        fields = [
-            "id", "event", "alumni", "alumni_name",
-            "status", "payment_status", "payment_ref",
-            "notes", "rsvp_at",
-        ]
-        read_only_fields = [
-            "id", "alumni", "alumni_name",
-            "payment_status", "payment_ref", "rsvp_at",
-        ]

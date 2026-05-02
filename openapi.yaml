@@ -9,21 +9,101 @@ info:
   license:
     name: Private
 paths:
+  /api/v1/alumni/events/:
+    get:
+      operationId: v1_alumni_events_retrieve
+      description: |-
+        GET /api/v1/events/
+        Returns all published events ordered by date.
+        Query params:
+          upcoming=true  → only events from today onwards (default behaviour)
+      tags:
+      - v1
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/alumni/events/{id}/:
+    get:
+      operationId: v1_alumni_events_retrieve_2
+      description: |-
+        GET /api/v1/events/<pk>/
+        Returns full event detail + the requesting alumni's RSVP status.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/alumni/events/{id}/rsvp/:
+    post:
+      operationId: v1_alumni_events_rsvp_create
+      description: |-
+        POST /api/v1/events/<pk>/rsvp/   → create or update RSVP
+        DELETE /api/v1/events/<pk>/rsvp/ → remove RSVP
+
+        The alumni record is resolved from the Firebase UID in the token.
+        Alumni cannot RSVP as someone else.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: v1_alumni_events_rsvp_destroy
+      description: |-
+        POST /api/v1/events/<pk>/rsvp/   → create or update RSVP
+        DELETE /api/v1/events/<pk>/rsvp/ → remove RSVP
+
+        The alumni record is resolved from the Firebase UID in the token.
+        Alumni cannot RSVP as someone else.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      responses:
+        '204':
+          description: No response body
   /api/v1/alumni/profiles/:
     get:
       operationId: v1_alumni_profiles_list
-      description: |-
-        Standard out-of-the-box Django ModelViewSet for Alumni Profiles.
-        Handles GET (list/detail), POST (create), PUT/PATCH (update), DELETE.
+      description: CRUD for alumni profiles. Owners can edit their own; admins can
+        edit all.
       parameters:
       - in: query
         name: batch
         schema:
           type: string
       - in: query
+        name: firebase_uid
+        schema:
+          type: string
+      - in: query
         name: graduation_year
         schema:
           type: integer
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
       - in: query
         name: is_verified
         schema:
@@ -59,9 +139,8 @@ paths:
           description: ''
     post:
       operationId: v1_alumni_profiles_create
-      description: |-
-        Standard out-of-the-box Django ModelViewSet for Alumni Profiles.
-        Handles GET (list/detail), POST (create), PUT/PATCH (update), DELETE.
+      description: CRUD for alumni profiles. Owners can edit their own; admins can
+        edit all.
       tags:
       - v1
       requestBody:
@@ -86,9 +165,8 @@ paths:
   /api/v1/alumni/profiles/{id}/:
     get:
       operationId: v1_alumni_profiles_retrieve
-      description: |-
-        Standard out-of-the-box Django ModelViewSet for Alumni Profiles.
-        Handles GET (list/detail), POST (create), PUT/PATCH (update), DELETE.
+      description: CRUD for alumni profiles. Owners can edit their own; admins can
+        edit all.
       parameters:
       - in: path
         name: id
@@ -109,9 +187,8 @@ paths:
           description: ''
     put:
       operationId: v1_alumni_profiles_update
-      description: |-
-        Standard out-of-the-box Django ModelViewSet for Alumni Profiles.
-        Handles GET (list/detail), POST (create), PUT/PATCH (update), DELETE.
+      description: CRUD for alumni profiles. Owners can edit their own; admins can
+        edit all.
       parameters:
       - in: path
         name: id
@@ -142,9 +219,8 @@ paths:
           description: ''
     patch:
       operationId: v1_alumni_profiles_partial_update
-      description: |-
-        Standard out-of-the-box Django ModelViewSet for Alumni Profiles.
-        Handles GET (list/detail), POST (create), PUT/PATCH (update), DELETE.
+      description: CRUD for alumni profiles. Owners can edit their own; admins can
+        edit all.
       parameters:
       - in: path
         name: id
@@ -174,9 +250,8 @@ paths:
           description: ''
     delete:
       operationId: v1_alumni_profiles_destroy
-      description: |-
-        Standard out-of-the-box Django ModelViewSet for Alumni Profiles.
-        Handles GET (list/detail), POST (create), PUT/PATCH (update), DELETE.
+      description: CRUD for alumni profiles. Owners can edit their own; admins can
+        edit all.
       parameters:
       - in: path
         name: id
@@ -193,7 +268,7 @@ components:
   schemas:
     AlumniProfile:
       type: object
-      description: Standard ModelSerializer for AlumniProfile.
+      description: Full profile serializer — used by directory and profile screens.
       properties:
         id:
           type: integer
@@ -216,6 +291,8 @@ components:
           type: string
           format: uri
           maxLength: 200
+        bio:
+          type: string
         graduation_year:
           type: integer
           maximum: 9223372036854775807
@@ -234,7 +311,13 @@ components:
           type: string
           format: uri
           maxLength: 200
+        current_city:
+          type: string
+          maxLength: 100
         is_verified:
+          type: boolean
+          readOnly: true
+        is_active:
           type: boolean
           readOnly: true
         created_at:
@@ -253,11 +336,12 @@ components:
       - full_name
       - graduation_year
       - id
+      - is_active
       - is_verified
       - updated_at
     AlumniProfileRequest:
       type: object
-      description: Standard ModelSerializer for AlumniProfile.
+      description: Full profile serializer — used by directory and profile screens.
       properties:
         full_name:
           type: string
@@ -275,6 +359,8 @@ components:
           type: string
           format: uri
           maxLength: 200
+        bio:
+          type: string
         graduation_year:
           type: integer
           maximum: 9223372036854775807
@@ -294,6 +380,9 @@ components:
           type: string
           format: uri
           maxLength: 200
+        current_city:
+          type: string
+          maxLength: 100
       required:
       - batch
       - email
@@ -324,7 +413,7 @@ components:
             $ref: '#/components/schemas/AlumniProfile'
     PatchedAlumniProfileRequest:
       type: object
-      description: Standard ModelSerializer for AlumniProfile.
+      description: Full profile serializer — used by directory and profile screens.
       properties:
         full_name:
           type: string
@@ -342,6 +431,8 @@ components:
           type: string
           format: uri
           maxLength: 200
+        bio:
+          type: string
         graduation_year:
           type: integer
           maximum: 9223372036854775807
@@ -361,6 +452,9 @@ components:
           type: string
           format: uri
           maxLength: 200
+        current_city:
+          type: string
+          maxLength: 100
 servers:
 - url: https://ssa-alumni-dev-m5bdpqwnfq-el.a.run.app
   description: Dev
