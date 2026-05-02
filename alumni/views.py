@@ -89,7 +89,7 @@ class EventListView(APIView):
 
         upcoming = request.query_params.get("upcoming", "true").lower()
         if upcoming == "true":
-            qs = qs.filter(event_date__gte=timezone.now())
+            qs = qs.filter(event_date__date__gte=timezone.localdate())
 
         serializer = EventListSerializer(qs, many=True, context={"request": request})
         return Response(serializer.data)
