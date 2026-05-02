@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "django_filters",
     "drf_spectacular",
+    "storages",           # django-storages: GCS backend for media uploads
     # Project apps
     "alumni",
 ]
@@ -163,11 +164,38 @@ USE_TZ        = True
 # ---------------------------------------------------------------------------
 STATIC_URL  = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# ---------------------------------------------------------------------------
+# Media / File Uploads — Google Cloud Storage
+# ---------------------------------------------------------------------------
+# Bucket layout:
+#   ssa-alumni-media/
+#   ├── events/banners/    ← poster images (JPG, WebP, GIF)
+#   └── events/videos/     ← highlight videos (MP4, WebM)
+#
+# Auth: Cloud Run uses the attached service-account's ADC (no key file needed).
+# In local dev, set GOOGLE_APPLICATION_CREDENTIALS to a service-account JSON.
+GCS_BUCKET_NAME = os.environ.get("GCS_BUCKET_NAME", "ssa-alumni-media")
+
 STORAGES = {
+    "default": {
+        # All model FileField / ImageField uploads go to GCS
+        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+        "OPTIONS": {
+            "bucket_name": GCS_BUCKET_NAME,
+            "default_acl": None,            # Use bucket-level IAM, not per-object ACLs
+            "file_overwrite": False,         # Never silently overwrite uploaded files
+            "max_memory_size": 10_000_000,   # 10 MB — larger files go straight to disk
+        },
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+
+# Public URL base for GCS objects (used by storage backends to build absolute URLs)
+GS_BUCKET_NAME    = GCS_BUCKET_NAME  # django-storages reads this key
+MEDIA_URL         = f"https://storage.googleapis.com/{GCS_BUCKET_NAME}/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

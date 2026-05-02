@@ -17,6 +17,9 @@ CSRF_TRUSTED_ORIGINS = [f"https://{CLOUD_RUN_URL}"]
 SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# GCS_BUCKET_NAME is read by base.py → defaults to "ssa-alumni-media"
+# Override via Cloud Run env var: GCS_BUCKET_NAME=ssa-alumni-media
+
 # ---------------------------------------------------------------------------
 # Database — Cloud SQL via Unix socket + IAM passwordless auth
 # DB_HOST = /cloudsql/<connection-name>  (directory; psycopg2 finds the socket)

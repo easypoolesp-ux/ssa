@@ -23,3 +23,9 @@ firebase-admin>=6.5
 
 # --- OpenAPI / Schema ---
 drf-spectacular>=0.27
+
+# --- Media / File Storage (Events) ---
+django-storages[google]>=1.14   # GCS backend for ImageField / FileField
+Pillow>=10.0                    # Required by Django ImageField
+openpyxl>=3.1                   # RSVP Excel export in admin
+google-cloud-storage>=2.14      # GCS signed URLs + blob access
