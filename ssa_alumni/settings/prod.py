@@ -9,10 +9,15 @@ import os
 
 DEBUG = False
 
-CLOUD_RUN_URL = os.environ.get("CLOUD_RUN_URL", "ssa-alumni-dev-m5bdpqwnfq-el.a.run.app")
+CLOUD_RUN_URL = os.environ.get("CLOUD_RUN_URL", "ssa-alumni-dev-685527496529.asia-south1.run.app")
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = [f"https://{CLOUD_RUN_URL}"]
+CSRF_TRUSTED_ORIGINS = [
+    f"https://{CLOUD_RUN_URL}",
+    "https://ssa-alumni-dev-685527496529.asia-south1.run.app",
+    "https://ssa-alumni-dev-m5bdpqwnfq-el.a.run.app",
+    "https://ssa-alumni.web.app",
+]
 
 SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

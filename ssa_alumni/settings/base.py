@@ -135,6 +135,7 @@ FIREBASE_PROJECT_ID = os.environ.get("FIREBASE_PROJECT_ID", "ssa-alumni")
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:8080",
+    "https://ssa-alumni-dev-685527496529.asia-south1.run.app",
     "https://ssa-alumni-dev-m5bdpqwnfq-el.a.run.app",
     "https://ssa-alumni.web.app",
 ]
