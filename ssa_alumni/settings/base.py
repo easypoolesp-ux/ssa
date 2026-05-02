@@ -176,7 +176,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 #
 # Auth: Cloud Run uses the attached service-account's ADC (no key file needed).
 # In local dev, set GOOGLE_APPLICATION_CREDENTIALS to a service-account JSON.
-GCS_BUCKET_NAME = os.environ.get("GCS_BUCKET_NAME", "ssa-alumni-media")
+GCS_BUCKET_NAME = os.environ.get("GCS_BUCKET_NAME", "ssa-alumni-media-dev")
 
 STORAGES = {
     # Model FileField / ImageField uploads go through the per-field
