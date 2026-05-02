@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # ---------------------------------------------------------------------------
 SECRET_KEY = os.environ.get("SECRET_KEY", "build-time-placeholder-secret-key")
 DEBUG = False
-ALLOWED_HOSTS = ["*"]  # Locked down per-environment in env-specific settings
+ALLOWED_HOSTS = []  # Defined explicitly per environment (dev.py / prod.py)
 
 # ---------------------------------------------------------------------------
 # Applications

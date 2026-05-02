@@ -10,7 +10,12 @@ import os
 DEBUG = False
 
 CLOUD_RUN_URL = os.environ.get("CLOUD_RUN_URL", "ssa-alumni-dev-685527496529.asia-south1.run.app")
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    "ssa-alumni-dev-685527496529.asia-south1.run.app",
+    "ssa-alumni-dev-m5bdpqwnfq-el.a.run.app",
+    "ssa-alumni.web.app",
+    CLOUD_RUN_URL,
+]
 
 CSRF_TRUSTED_ORIGINS = [
     f"https://{CLOUD_RUN_URL}",
