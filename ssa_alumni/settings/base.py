@@ -191,8 +191,9 @@ STORAGES = {
 }
 
 # Public URL base for GCS objects (used by storage backends to build absolute URLs)
-GS_BUCKET_NAME = GCS_BUCKET_NAME  # django-storages reads this key
-MEDIA_URL      = f"https://storage.googleapis.com/{GCS_BUCKET_NAME}/"
+GS_BUCKET_NAME       = GCS_BUCKET_NAME  # django-storages reads this key
+GS_QUERYSTRING_AUTH  = False             # Use plain public URLs, not signed URLs
+MEDIA_URL            = f"https://storage.googleapis.com/{GCS_BUCKET_NAME}/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
