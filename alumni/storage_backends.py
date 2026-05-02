@@ -1,15 +1,14 @@
 """
 alumni/storage_backends.py
-Responsibility: Define named GCS storage backends for each media type.
-                One backend per upload category = clear bucket organisation.
+Responsibility: Named GCS storage backends for each media category.
+
+Both classes read GCS_BUCKET_NAME from Django settings so they always
+target the correct bucket, whether running on Cloud Run or locally.
 
 GCS Bucket layout:
     ssa-alumni-media/
     ├── events/banners/     ← event poster images (JPG, WebP, GIF)
     └── events/videos/      ← event highlight videos (MP4, WebM)
-
-Bucket is set via GCS_BUCKET_NAME env var (default: ssa-alumni-media).
-Files are stored with PUBLIC_URL = False; signed URLs are generated at read time.
 """
 
 from django.conf import settings
@@ -22,16 +21,18 @@ class EventBannerStorage(GoogleCloudStorage):
     Uploaded to: gs://<bucket>/events/banners/<filename>
     """
 
-    location = "events/banners"
-    file_overwrite = False   # keep originals if re-uploaded
+    def __init__(self, **kwargs):
+        bucket_name = getattr(settings, "GCS_BUCKET_NAME", "ssa-alumni-media")
+        super().__init__(bucket_name=bucket_name, location="events/banners", file_overwrite=False, **kwargs)
 
 
 class EventVideoStorage(GoogleCloudStorage):
     """
     Storage backend for event highlight videos (MP4 / WebM).
     Uploaded to: gs://<bucket>/events/videos/<filename>
-    Max recommended size: 50 MB — larger assets should use a CDN directly.
+    Max recommended size: 50 MB.
     """
 
-    location = "events/videos"
-    file_overwrite = False
+    def __init__(self, **kwargs):
+        bucket_name = getattr(settings, "GCS_BUCKET_NAME", "ssa-alumni-media")
+        super().__init__(bucket_name=bucket_name, location="events/videos", file_overwrite=False, **kwargs)

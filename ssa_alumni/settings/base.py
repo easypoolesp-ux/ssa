@@ -178,15 +178,11 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 GCS_BUCKET_NAME = os.environ.get("GCS_BUCKET_NAME", "ssa-alumni-media")
 
 STORAGES = {
+    # Model FileField / ImageField uploads go through the per-field
+    # EventBannerStorage / EventVideoStorage backends in storage_backends.py
+    # which always pass bucket_name explicitly.
     "default": {
-        # All model FileField / ImageField uploads go to GCS
-        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
-        "OPTIONS": {
-            "bucket_name": GCS_BUCKET_NAME,
-            "default_acl": None,            # Use bucket-level IAM, not per-object ACLs
-            "file_overwrite": False,         # Never silently overwrite uploaded files
-            "max_memory_size": 10_000_000,   # 10 MB — larger files go straight to disk
-        },
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
@@ -194,8 +190,8 @@ STORAGES = {
 }
 
 # Public URL base for GCS objects (used by storage backends to build absolute URLs)
-GS_BUCKET_NAME    = GCS_BUCKET_NAME  # django-storages reads this key
-MEDIA_URL         = f"https://storage.googleapis.com/{GCS_BUCKET_NAME}/"
+GS_BUCKET_NAME = GCS_BUCKET_NAME  # django-storages reads this key
+MEDIA_URL      = f"https://storage.googleapis.com/{GCS_BUCKET_NAME}/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
