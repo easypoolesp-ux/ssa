@@ -17,13 +17,35 @@ from .models import AlumniProfile, Event, RSVP
 class AlumniProfileSerializer(serializers.ModelSerializer):
     """Full profile serializer — used by directory and profile screens."""
 
+    # Backward-compat computed field (not a DB column)
+    full_name = serializers.SerializerMethodField(read_only=True)
+
+    def get_full_name(self, obj):
+        return obj.full_name
+
     class Meta:
         model  = AlumniProfile
         fields = [
-            "id", "firebase_uid", "full_name", "email", "phone",
-            "profile_pic", "bio", "graduation_year", "batch",
-            "current_company", "current_role", "linkedin_url",
-            "current_city", "is_verified", "is_active",
+            # identity
+            "id", "firebase_uid", "member_type",
+            # personal
+            "first_name", "last_name", "full_name",
+            "date_of_birth", "email", "phone",
+            "profile_pic", "bio", "instagram_url", "linkedin_url",
+            # school
+            "graduation_year", "batch",
+            # education — 10+2
+            "edu_10_plus_2_stream",
+            # education — graduation
+            "edu_graduation_course", "edu_graduation_college", "edu_graduation_university",
+            # education — post-graduation
+            "edu_postgrad_degree", "edu_postgrad_college", "edu_postgrad_university",
+            # professional
+            "employment_type", "current_company", "current_role",
+            "designation", "business_details", "current_city",
+            # access
+            "is_verified", "is_active",
+            # audit
             "created_at", "updated_at",
         ]
         read_only_fields = [
@@ -32,6 +54,9 @@ class AlumniProfileSerializer(serializers.ModelSerializer):
         ]
 
     def validate_graduation_year(self, value):
+        if value is None:
+            return value
+        import datetime
         current_year = datetime.date.today().year
         if value < 1900 or value > current_year + 5:
             raise serializers.ValidationError("Please provide a valid graduation year.")

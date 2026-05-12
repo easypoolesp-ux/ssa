@@ -17,41 +17,99 @@ User = get_user_model()
 # =============================================================================
 
 class AlumniProfile(models.Model):
-    """Core alumni record for the school directory."""
+    """Core alumni record for the school directory (alumni + teachers)."""
 
-    # Firebase Auth linking
+    # ── Member type ──────────────────────────────────────────────────────────
+    class MemberType(models.TextChoices):
+        STUDENT = "student", "Student"
+        TEACHER = "teacher", "Teacher"
+
+    member_type = models.CharField(
+        max_length=10,
+        choices=MemberType.choices,
+        default=MemberType.STUDENT,
+        help_text="Whether this member is a student alumni or a teacher",
+    )
+
+    # ── Firebase Auth linking ─────────────────────────────────────────────────
     firebase_uid = models.CharField(max_length=128, unique=True, null=True, blank=True)
 
-    # Personal
-    full_name    = models.CharField(max_length=200)
+    # ── Personal ──────────────────────────────────────────────────────────────
+    first_name    = models.CharField(max_length=100)
+    last_name     = models.CharField(max_length=100, blank=True, default='')
+    date_of_birth = models.DateField(null=True, blank=True)
     email        = models.EmailField(unique=True)
     phone        = models.CharField(max_length=20, blank=True)
     profile_pic  = models.URLField(blank=True)
     bio          = models.TextField(blank=True)
+    instagram_url = models.URLField(blank=True)
+    linkedin_url  = models.URLField(blank=True)
 
-    # School details
-    graduation_year = models.PositiveIntegerField()
-    batch           = models.CharField(max_length=50)
+    # ── School / Batch details (student only) ────────────────────────────────
+    graduation_year = models.PositiveIntegerField(null=True, blank=True)
+    batch           = models.CharField(max_length=50, blank=True)
 
-    # Professional
-    current_company  = models.CharField(max_length=200, blank=True)
+    # ── Education — 10+2 ─────────────────────────────────────────────────────
+    class Stream1012(models.TextChoices):
+        SCIENCE  = "science",  "Science"
+        COMMERCE = "commerce", "Commerce"
+        ARTS     = "arts",     "Arts"
+        OTHER    = "other",    "Other"
+
+    edu_10_plus_2_stream = models.CharField(
+        max_length=10,
+        choices=Stream1012.choices,
+        blank=True,
+        help_text="10+2 stream (Science / Commerce / Arts / Other)",
+    )
+
+    # ── Education — Graduation ────────────────────────────────────────────────
+    edu_graduation_course     = models.CharField(max_length=150, blank=True, help_text="e.g. B.Tech, BBA, B.Sc")
+    edu_graduation_college    = models.CharField(max_length=200, blank=True)
+    edu_graduation_university = models.CharField(max_length=200, blank=True)
+
+    # ── Education — Post-Graduation ───────────────────────────────────────────
+    edu_postgrad_degree     = models.CharField(max_length=150, blank=True, help_text="e.g. MBA, M.Tech")
+    edu_postgrad_college    = models.CharField(max_length=200, blank=True)
+    edu_postgrad_university = models.CharField(max_length=200, blank=True)
+
+    # ── Professional ──────────────────────────────────────────────────────────
+    class EmploymentType(models.TextChoices):
+        EMPLOYED   = "employed",   "Employed"
+        BUSINESS   = "business",   "Business / Self-employed"
+        NOT_WORKING = "not_working", "Student / Not Working"
+
+    employment_type  = models.CharField(
+        max_length=15,
+        choices=EmploymentType.choices,
+        blank=True,
+        help_text="Current employment status",
+    )
+    current_company  = models.CharField(max_length=200, blank=True, help_text="Company / business name")
     current_role     = models.CharField(max_length=200, blank=True)
-    linkedin_url     = models.URLField(blank=True)
+    designation      = models.CharField(max_length=200, blank=True, help_text="Job designation / title")
+    business_details = models.TextField(blank=True, help_text="Description of business / self-employment")
     current_city     = models.CharField(max_length=100, blank=True)
 
-    # Access control
+    # ── Access control ────────────────────────────────────────────────────────
     is_verified = models.BooleanField(default=False)
     is_active   = models.BooleanField(default=False)
 
-    # Meta
+    # ── Meta ──────────────────────────────────────────────────────────────────
     created_at  = models.DateTimeField(auto_now_add=True)
     updated_at  = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["-graduation_year", "full_name"]
+        ordering = ["-graduation_year", "first_name", "last_name"]
+
+    @property
+    def full_name(self) -> str:
+        """Backward-compatible computed property. Read existing code can still use .full_name."""
+        return f"{self.first_name} {self.last_name}".strip()
 
     def __str__(self):
-        return f"{self.full_name} ({self.graduation_year})"
+        year_part = f" ({self.graduation_year})" if self.graduation_year else ""
+        return f"{self.full_name}{year_part} [{self.get_member_type_display()}]"
 
 
 # =============================================================================
