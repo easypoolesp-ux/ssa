@@ -49,30 +49,6 @@ class AlumniProfile(models.Model):
     graduation_year = models.PositiveIntegerField(null=True, blank=True)
     batch           = models.CharField(max_length=50, blank=True)
 
-    # ── Education — 10+2 ─────────────────────────────────────────────────────
-    class Stream1012(models.TextChoices):
-        SCIENCE  = "science",  "Science"
-        COMMERCE = "commerce", "Commerce"
-        ARTS     = "arts",     "Arts"
-        OTHER    = "other",    "Other"
-
-    edu_10_plus_2_stream = models.CharField(
-        max_length=10,
-        choices=Stream1012.choices,
-        blank=True,
-        help_text="10+2 stream (Science / Commerce / Arts / Other)",
-    )
-
-    # ── Education — Graduation ────────────────────────────────────────────────
-    edu_graduation_course     = models.CharField(max_length=150, blank=True, help_text="e.g. B.Tech, BBA, B.Sc")
-    edu_graduation_college    = models.CharField(max_length=200, blank=True)
-    edu_graduation_university = models.CharField(max_length=200, blank=True)
-
-    # ── Education — Post-Graduation ───────────────────────────────────────────
-    edu_postgrad_degree     = models.CharField(max_length=150, blank=True, help_text="e.g. MBA, M.Tech")
-    edu_postgrad_college    = models.CharField(max_length=200, blank=True)
-    edu_postgrad_university = models.CharField(max_length=200, blank=True)
-
     # ── Professional ──────────────────────────────────────────────────────────
     class EmploymentType(models.TextChoices):
         EMPLOYED   = "employed",   "Employed"
@@ -85,10 +61,6 @@ class AlumniProfile(models.Model):
         blank=True,
         help_text="Current employment status",
     )
-    current_company  = models.CharField(max_length=200, blank=True, help_text="Company / business name")
-    current_role     = models.CharField(max_length=200, blank=True)
-    designation      = models.CharField(max_length=200, blank=True, help_text="Job designation / title")
-    business_details = models.TextField(blank=True, help_text="Description of business / self-employment")
     current_city     = models.CharField(max_length=100, blank=True)
 
     # ── Access control ────────────────────────────────────────────────────────
@@ -110,6 +82,45 @@ class AlumniProfile(models.Model):
     def __str__(self):
         year_part = f" ({self.graduation_year})" if self.graduation_year else ""
         return f"{self.full_name}{year_part} [{self.get_member_type_display()}]"
+
+
+# =============================================================================
+# Nested Profile Details (Stackable)
+# =============================================================================
+
+class WorkExperience(models.Model):
+    """Stackable work experiences for an alumni."""
+    profile = models.ForeignKey(AlumniProfile, on_delete=models.CASCADE, related_name="work_experiences")
+    company_name = models.CharField(max_length=255)
+    designation = models.CharField(max_length=255)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    is_current = models.BooleanField(default=False)
+    location = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-is_current", "-start_date"]
+
+    def __str__(self):
+        return f"{self.designation} at {self.company_name} ({self.profile.full_name})"
+
+
+class Education(models.Model):
+    """Stackable education records for an alumni."""
+    profile = models.ForeignKey(AlumniProfile, on_delete=models.CASCADE, related_name="educations")
+    institution_name = models.CharField(max_length=255)
+    degree = models.CharField(max_length=255, help_text="e.g., B.Tech, MBA, 10+2")
+    field_of_study = models.CharField(max_length=255, blank=True)
+    start_year = models.PositiveIntegerField(null=True, blank=True)
+    end_year = models.PositiveIntegerField(null=True, blank=True)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-end_year", "-start_year"]
+
+    def __str__(self):
+        return f"{self.degree} from {self.institution_name} ({self.profile.full_name})"
 
 
 # =============================================================================

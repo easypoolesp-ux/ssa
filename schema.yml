@@ -1,0 +1,951 @@
+openapi: 3.0.3
+info:
+  title: SSA Alumni API
+  version: 1.0.0
+  description: REST API for the SSA Alumni school directory. Authentication via Firebase
+    JWT (Bearer token).
+  contact:
+    name: SSA Team
+  license:
+    name: Private
+paths:
+  /api/v1/alumni/events/:
+    get:
+      operationId: v1_alumni_events_list
+      description: |-
+        GET /api/v1/events/
+        Returns all published events ordered by date.
+        Query params:
+          upcoming=true  → only events from today onwards (default behaviour)
+      parameters:
+      - in: query
+        name: upcoming
+        schema:
+          type: boolean
+          default: true
+        description: Filter for upcoming events only
+      tags:
+      - v1
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventList'
+          description: ''
+  /api/v1/alumni/events/{id}/:
+    get:
+      operationId: v1_alumni_events_retrieve
+      description: |-
+        GET /api/v1/events/<pk>/
+        Returns full event detail + the requesting alumni's RSVP status.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventDetail'
+          description: ''
+  /api/v1/alumni/events/{id}/rsvp/:
+    post:
+      operationId: v1_alumni_events_rsvp_create
+      description: |-
+        POST /api/v1/events/<pk>/rsvp/   → create or update RSVP
+        DELETE /api/v1/events/<pk>/rsvp/ → remove RSVP
+
+        The alumni record is resolved from the Firebase UID in the token.
+        Alumni cannot RSVP as someone else.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RSVPRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RSVPRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RSVPRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RSVP'
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RSVP'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+    delete:
+      operationId: v1_alumni_events_rsvp_destroy
+      description: |-
+        POST /api/v1/events/<pk>/rsvp/   → create or update RSVP
+        DELETE /api/v1/events/<pk>/rsvp/ → remove RSVP
+
+        The alumni record is resolved from the Firebase UID in the token.
+        Alumni cannot RSVP as someone else.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      responses:
+        '204':
+          description: No response body
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/alumni/profiles/:
+    get:
+      operationId: v1_alumni_profiles_list
+      description: CRUD for alumni profiles. Owners can edit their own; admins can
+        edit all.
+      parameters:
+      - in: query
+        name: batch
+        schema:
+          type: string
+      - in: query
+        name: firebase_uid
+        schema:
+          type: string
+      - in: query
+        name: graduation_year
+        schema:
+          type: integer
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - in: query
+        name: is_verified
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAlumniProfileList'
+          description: ''
+    post:
+      operationId: v1_alumni_profiles_create
+      description: CRUD for alumni profiles. Owners can edit their own; admins can
+        edit all.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlumniProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AlumniProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AlumniProfileRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlumniProfile'
+          description: ''
+  /api/v1/alumni/profiles/{id}/:
+    get:
+      operationId: v1_alumni_profiles_retrieve
+      description: CRUD for alumni profiles. Owners can edit their own; admins can
+        edit all.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this alumni profile.
+        required: true
+      tags:
+      - v1
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlumniProfile'
+          description: ''
+    put:
+      operationId: v1_alumni_profiles_update
+      description: CRUD for alumni profiles. Owners can edit their own; admins can
+        edit all.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this alumni profile.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlumniProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AlumniProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AlumniProfileRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlumniProfile'
+          description: ''
+    patch:
+      operationId: v1_alumni_profiles_partial_update
+      description: CRUD for alumni profiles. Owners can edit their own; admins can
+        edit all.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this alumni profile.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAlumniProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAlumniProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAlumniProfileRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlumniProfile'
+          description: ''
+    delete:
+      operationId: v1_alumni_profiles_destroy
+      description: CRUD for alumni profiles. Owners can edit their own; admins can
+        edit all.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this alumni profile.
+        required: true
+      tags:
+      - v1
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    AlumniProfile:
+      type: object
+      description: Full profile serializer — used by directory and profile screens.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firebase_uid:
+          type: string
+          readOnly: true
+          nullable: true
+        member_type:
+          allOf:
+          - $ref: '#/components/schemas/MemberTypeEnum'
+          description: |-
+            Whether this member is a student alumni or a teacher
+
+            * `student` - Student
+            * `teacher` - Teacher
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        full_name:
+          type: string
+          readOnly: true
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        phone:
+          type: string
+          maxLength: 20
+        profile_pic:
+          type: string
+          format: uri
+          maxLength: 200
+        bio:
+          type: string
+        instagram_url:
+          type: string
+          format: uri
+          maxLength: 200
+        linkedin_url:
+          type: string
+          format: uri
+          maxLength: 200
+        current_city:
+          type: string
+          maxLength: 100
+        graduation_year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        batch:
+          type: string
+          maxLength: 50
+        work_experiences:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkExperience'
+        educations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Education'
+        is_verified:
+          type: boolean
+          readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - email
+      - firebase_uid
+      - first_name
+      - full_name
+      - id
+      - is_active
+      - is_verified
+      - updated_at
+    AlumniProfileRequest:
+      type: object
+      description: Full profile serializer — used by directory and profile screens.
+      properties:
+        member_type:
+          allOf:
+          - $ref: '#/components/schemas/MemberTypeEnum'
+          description: |-
+            Whether this member is a student alumni or a teacher
+
+            * `student` - Student
+            * `teacher` - Teacher
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        phone:
+          type: string
+          maxLength: 20
+        profile_pic:
+          type: string
+          format: uri
+          maxLength: 200
+        bio:
+          type: string
+        instagram_url:
+          type: string
+          format: uri
+          maxLength: 200
+        linkedin_url:
+          type: string
+          format: uri
+          maxLength: 200
+        current_city:
+          type: string
+          maxLength: 100
+        graduation_year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        batch:
+          type: string
+          maxLength: 50
+        work_experiences:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkExperienceRequest'
+        educations:
+          type: array
+          items:
+            $ref: '#/components/schemas/EducationRequest'
+      required:
+      - email
+      - first_name
+    Education:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        institution_name:
+          type: string
+          maxLength: 255
+        degree:
+          type: string
+          description: e.g., B.Tech, MBA, 10+2
+          maxLength: 255
+        field_of_study:
+          type: string
+          maxLength: 255
+        start_year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        end_year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        description:
+          type: string
+      required:
+      - degree
+      - id
+      - institution_name
+    EducationRequest:
+      type: object
+      properties:
+        institution_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        degree:
+          type: string
+          minLength: 1
+          description: e.g., B.Tech, MBA, 10+2
+          maxLength: 255
+        field_of_study:
+          type: string
+          maxLength: 255
+        start_year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        end_year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        description:
+          type: string
+      required:
+      - degree
+      - institution_name
+    EventDetail:
+      type: object
+      description: |-
+        Full serializer for the event detail screen.
+        Includes description, online_link, and the requesting alumni's RSVP.
+        `my_rsvp` is injected by the view — null if not RSVPd yet.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 300
+        description:
+          type: string
+        event_type:
+          $ref: '#/components/schemas/EventTypeEnum'
+        event_date:
+          type: string
+          format: date-time
+          description: Event start date and time (IST)
+        end_date:
+          type: string
+          format: date-time
+          nullable: true
+          description: Optional end date/time for multi-day events
+        location:
+          type: string
+          maxLength: 300
+        is_online:
+          type: boolean
+        online_link:
+          type: string
+          format: uri
+          description: Google Meet / Zoom link
+          maxLength: 200
+        max_attendees:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          description: Leave blank for unlimited capacity
+        fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          description: 0.00 means free event
+        fee_currency:
+          type: string
+          maxLength: 5
+        banner_url:
+          type: string
+          readOnly: true
+        banner_video_url:
+          type: string
+          readOnly: true
+        is_free:
+          type: boolean
+          readOnly: true
+        rsvp_count:
+          type: integer
+          readOnly: true
+        is_full:
+          type: boolean
+          readOnly: true
+        is_published:
+          type: boolean
+          description: Only published events are visible in the app
+        my_rsvp:
+          allOf:
+          - $ref: '#/components/schemas/RSVP'
+          readOnly: true
+      required:
+      - banner_url
+      - banner_video_url
+      - description
+      - event_date
+      - id
+      - is_free
+      - is_full
+      - my_rsvp
+      - rsvp_count
+      - title
+    EventList:
+      type: object
+      description: |-
+        Lightweight serializer for the events list screen.
+        Returns only what a card widget needs — keeps payload small.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 300
+        event_type:
+          $ref: '#/components/schemas/EventTypeEnum'
+        event_date:
+          type: string
+          format: date-time
+          description: Event start date and time (IST)
+        end_date:
+          type: string
+          format: date-time
+          nullable: true
+          description: Optional end date/time for multi-day events
+        location:
+          type: string
+          maxLength: 300
+        is_online:
+          type: boolean
+        fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          description: 0.00 means free event
+        fee_currency:
+          type: string
+          maxLength: 5
+        banner_url:
+          type: string
+          readOnly: true
+        banner_video_url:
+          type: string
+          readOnly: true
+        is_free:
+          type: boolean
+          readOnly: true
+        rsvp_count:
+          type: integer
+          readOnly: true
+        is_full:
+          type: boolean
+          readOnly: true
+        is_published:
+          type: boolean
+          description: Only published events are visible in the app
+      required:
+      - banner_url
+      - banner_video_url
+      - event_date
+      - id
+      - is_free
+      - is_full
+      - rsvp_count
+      - title
+    EventTypeEnum:
+      enum:
+      - reunion
+      - webinar
+      - sports
+      - cultural
+      - other
+      type: string
+      description: |-
+        * `reunion` - Reunion
+        * `webinar` - Webinar
+        * `sports` - Sports
+        * `cultural` - Cultural
+        * `other` - Other
+    MemberTypeEnum:
+      enum:
+      - student
+      - teacher
+      type: string
+      description: |-
+        * `student` - Student
+        * `teacher` - Teacher
+    PaginatedAlumniProfileList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlumniProfile'
+    PatchedAlumniProfileRequest:
+      type: object
+      description: Full profile serializer — used by directory and profile screens.
+      properties:
+        member_type:
+          allOf:
+          - $ref: '#/components/schemas/MemberTypeEnum'
+          description: |-
+            Whether this member is a student alumni or a teacher
+
+            * `student` - Student
+            * `teacher` - Teacher
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        phone:
+          type: string
+          maxLength: 20
+        profile_pic:
+          type: string
+          format: uri
+          maxLength: 200
+        bio:
+          type: string
+        instagram_url:
+          type: string
+          format: uri
+          maxLength: 200
+        linkedin_url:
+          type: string
+          format: uri
+          maxLength: 200
+        current_city:
+          type: string
+          maxLength: 100
+        graduation_year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        batch:
+          type: string
+          maxLength: 50
+        work_experiences:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkExperienceRequest'
+        educations:
+          type: array
+          items:
+            $ref: '#/components/schemas/EducationRequest'
+    PaymentStatusEnum:
+      enum:
+      - not_required
+      - pending
+      - paid
+      - refunded
+      type: string
+      description: |-
+        * `not_required` - Not Required
+        * `pending` - Payment Pending
+        * `paid` - Paid
+        * `refunded` - Refunded
+    RSVP:
+      type: object
+      description: |-
+        Used for both reading an RSVP (in EventDetailSerializer)
+        and writing one (POST/PUT from the app).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        event:
+          type: integer
+        alumni:
+          type: integer
+          readOnly: true
+        alumni_name:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        payment_status:
+          allOf:
+          - $ref: '#/components/schemas/PaymentStatusEnum'
+          readOnly: true
+        payment_ref:
+          type: string
+          readOnly: true
+          description: Razorpay order/payment ID — populated after payment integration
+        notes:
+          type: string
+          description: e.g. 'Bringing +1'
+        rsvp_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - alumni
+      - alumni_name
+      - event
+      - id
+      - payment_ref
+      - payment_status
+      - rsvp_at
+    RSVPRequest:
+      type: object
+      description: |-
+        Used for both reading an RSVP (in EventDetailSerializer)
+        and writing one (POST/PUT from the app).
+      properties:
+        event:
+          type: integer
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        notes:
+          type: string
+          description: e.g. 'Bringing +1'
+      required:
+      - event
+    StatusEnum:
+      enum:
+      - attending
+      - not_attending
+      - maybe
+      type: string
+      description: |-
+        * `attending` - Attending
+        * `not_attending` - Not Attending
+        * `maybe` - Maybe
+    WorkExperience:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        company_name:
+          type: string
+          maxLength: 255
+        designation:
+          type: string
+          maxLength: 255
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        is_current:
+          type: boolean
+        location:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+      required:
+      - company_name
+      - designation
+      - id
+    WorkExperienceRequest:
+      type: object
+      properties:
+        company_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        designation:
+          type: string
+          minLength: 1
+          maxLength: 255
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        is_current:
+          type: boolean
+        location:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+      required:
+      - company_name
+      - designation
+servers:
+- url: https://ssa-alumni-dev-m5bdpqwnfq-el.a.run.app
+  description: Dev

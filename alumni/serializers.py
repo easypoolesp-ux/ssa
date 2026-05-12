@@ -7,7 +7,31 @@ Responsibility: Transform model instances ↔ validated JSON.
 import datetime
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
-from .models import AlumniProfile, Event, RSVP
+from .models import AlumniProfile, Event, RSVP, WorkExperience, Education
+
+
+# =============================================================================
+# Stackable Profile Elements
+# =============================================================================
+
+class WorkExperienceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkExperience
+        fields = [
+            "id", "company_name", "designation", "start_date",
+            "end_date", "is_current", "location", "description",
+        ]
+        read_only_fields = ["id"]
+
+
+class EducationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Education
+        fields = [
+            "id", "institution_name", "degree", "field_of_study",
+            "start_year", "end_year", "description",
+        ]
+        read_only_fields = ["id"]
 
 
 # =============================================================================
@@ -19,6 +43,10 @@ class AlumniProfileSerializer(serializers.ModelSerializer):
 
     # Backward-compat computed field (not a DB column)
     full_name = serializers.SerializerMethodField(read_only=True)
+    
+    # Nested relations
+    work_experiences = WorkExperienceSerializer(many=True, required=False)
+    educations = EducationSerializer(many=True, required=False)
 
     def get_full_name(self, obj):
         return obj.full_name
@@ -31,18 +59,11 @@ class AlumniProfileSerializer(serializers.ModelSerializer):
             # personal
             "first_name", "last_name", "full_name",
             "date_of_birth", "email", "phone",
-            "profile_pic", "bio", "instagram_url", "linkedin_url",
+            "profile_pic", "bio", "instagram_url", "linkedin_url", "current_city",
             # school
             "graduation_year", "batch",
-            # education — 10+2
-            "edu_10_plus_2_stream",
-            # education — graduation
-            "edu_graduation_course", "edu_graduation_college", "edu_graduation_university",
-            # education — post-graduation
-            "edu_postgrad_degree", "edu_postgrad_college", "edu_postgrad_university",
-            # professional
-            "employment_type", "current_company", "current_role",
-            "designation", "business_details", "current_city",
+            # nested
+            "work_experiences", "educations",
             # access
             "is_verified", "is_active",
             # audit
@@ -52,6 +73,34 @@ class AlumniProfileSerializer(serializers.ModelSerializer):
             "id", "firebase_uid", "is_verified", "is_active",
             "created_at", "updated_at",
         ]
+
+    def _handle_nested(self, instance, validated_data):
+        """Helper to create/update nested relations during save."""
+        if "work_experiences" in validated_data:
+            work_data = validated_data.pop("work_experiences")
+            instance.work_experiences.all().delete()
+            for w in work_data:
+                WorkExperience.objects.create(profile=instance, **w)
+                
+        if "educations" in validated_data:
+            edu_data = validated_data.pop("educations")
+            instance.educations.all().delete()
+            for e in edu_data:
+                Education.objects.create(profile=instance, **e)
+
+    def create(self, validated_data):
+        work_data = validated_data.pop("work_experiences", [])
+        edu_data = validated_data.pop("educations", [])
+        instance = super().create(validated_data)
+        for w in work_data:
+            WorkExperience.objects.create(profile=instance, **w)
+        for e in edu_data:
+            Education.objects.create(profile=instance, **e)
+        return instance
+
+    def update(self, instance, validated_data):
+        self._handle_nested(instance, validated_data)
+        return super().update(instance, validated_data)
 
     def validate_graduation_year(self, value):
         if value is None:
