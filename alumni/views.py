@@ -47,9 +47,9 @@ class AlumniProfileViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
     filter_backends   = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields  = ["graduation_year", "batch", "is_verified", "is_active", "firebase_uid"]
-    search_fields     = ["first_name", "last_name", "current_company", "current_role"]
-    ordering_fields   = ["graduation_year", "first_name", "last_name"]
+    filterset_fields  = ["batch", "is_verified", "is_active", "firebase_uid"]
+    search_fields     = ["first_name", "last_name", "batch"]
+    ordering_fields   = ["batch", "first_name", "last_name"]
 
     def perform_create(self, serializer):
         firebase_uid = getattr(self.request.user, "uid", None)

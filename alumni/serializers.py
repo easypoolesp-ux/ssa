@@ -20,6 +20,7 @@ class WorkExperienceSerializer(serializers.ModelSerializer):
         fields = [
             "id", "company_name", "designation", "start_date",
             "end_date", "is_current", "location", "description",
+            "company_website", "company_linkedin", "company_instagram",
         ]
         read_only_fields = ["id"]
 
@@ -61,7 +62,7 @@ class AlumniProfileSerializer(serializers.ModelSerializer):
             "date_of_birth", "email", "phone",
             "profile_pic", "bio", "instagram_url", "linkedin_url", "current_city",
             # school
-            "graduation_year", "batch",
+            "batch",
             # nested
             "work_experiences", "educations",
             # access
@@ -102,14 +103,6 @@ class AlumniProfileSerializer(serializers.ModelSerializer):
         self._handle_nested(instance, validated_data)
         return super().update(instance, validated_data)
 
-    def validate_graduation_year(self, value):
-        if value is None:
-            return value
-        import datetime
-        current_year = datetime.date.today().year
-        if value < 1900 or value > current_year + 5:
-            raise serializers.ValidationError("Please provide a valid graduation year.")
-        return value
 
 
 # =============================================================================

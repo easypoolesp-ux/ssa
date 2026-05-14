@@ -46,7 +46,6 @@ class AlumniProfile(models.Model):
     linkedin_url  = models.URLField(blank=True)
 
     # ── School / Batch details (student only) ────────────────────────────────
-    graduation_year = models.PositiveIntegerField(null=True, blank=True)
     batch           = models.CharField(max_length=50, blank=True)
 
     # ── Professional ──────────────────────────────────────────────────────────
@@ -72,7 +71,7 @@ class AlumniProfile(models.Model):
     updated_at  = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["-graduation_year", "first_name", "last_name"]
+        ordering = ["-batch", "first_name", "last_name"]
 
     @property
     def full_name(self) -> str:
@@ -80,8 +79,8 @@ class AlumniProfile(models.Model):
         return f"{self.first_name} {self.last_name}".strip()
 
     def __str__(self):
-        year_part = f" ({self.graduation_year})" if self.graduation_year else ""
-        return f"{self.full_name}{year_part} [{self.get_member_type_display()}]"
+        batch_part = f" ({self.batch})" if self.batch else ""
+        return f"{self.full_name}{batch_part} [{self.get_member_type_display()}]"
 
 
 # =============================================================================
@@ -98,6 +97,9 @@ class WorkExperience(models.Model):
     is_current = models.BooleanField(default=False)
     location = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
+    company_website = models.URLField(max_length=500, blank=True, null=True)
+    company_linkedin = models.URLField(max_length=500, blank=True, null=True)
+    company_instagram = models.URLField(max_length=500, blank=True, null=True)
 
     class Meta:
         ordering = ["-is_current", "-start_date"]

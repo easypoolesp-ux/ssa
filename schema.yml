@@ -150,10 +150,6 @@ paths:
         schema:
           type: string
       - in: query
-        name: graduation_year
-        schema:
-          type: integer
-      - in: query
         name: is_active
         schema:
           type: boolean
@@ -375,12 +371,6 @@ components:
         current_city:
           type: string
           maxLength: 100
-        graduation_year:
-          type: integer
-          maximum: 9223372036854775807
-          minimum: 0
-          format: int64
-          nullable: true
         batch:
           type: string
           maxLength: 50
@@ -464,12 +454,6 @@ components:
         current_city:
           type: string
           maxLength: 100
-        graduation_year:
-          type: integer
-          maximum: 9223372036854775807
-          minimum: 0
-          format: int64
-          nullable: true
         batch:
           type: string
           maxLength: 50
@@ -790,12 +774,6 @@ components:
         current_city:
           type: string
           maxLength: 100
-        graduation_year:
-          type: integer
-          maximum: 9223372036854775807
-          minimum: 0
-          format: int64
-          nullable: true
         batch:
           type: string
           maxLength: 50
@@ -913,6 +891,21 @@ components:
           maxLength: 255
         description:
           type: string
+        company_website:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 500
+        company_linkedin:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 500
+        company_instagram:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 500
       required:
       - company_name
       - designation
@@ -943,6 +936,21 @@ components:
           maxLength: 255
         description:
           type: string
+        company_website:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 500
+        company_linkedin:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 500
+        company_instagram:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 500
       required:
       - company_name
       - designation

@@ -22,9 +22,9 @@ from .models import AlumniProfile, Event, RSVP
 class AlumniProfileAdmin(admin.ModelAdmin):
     """Manage alumni accounts, activation, and verification."""
 
-    list_display   = ("full_name", "graduation_year", "batch", "email", "is_verified", "is_active")
-    list_filter    = ("graduation_year", "batch", "is_verified", "is_active")
-    search_fields  = ("full_name", "email", "current_company")
+    list_display   = ("full_name", "batch", "email", "is_verified", "is_active")
+    list_filter    = ("batch", "is_verified", "is_active")
+    search_fields  = ("first_name", "last_name", "email")
     list_editable  = ("is_verified", "is_active")
     readonly_fields = ("firebase_uid", "created_at", "updated_at")
 
@@ -45,7 +45,7 @@ def _export_event_rsvps_excel(modeladmin, request, queryset):
     # Header row
     headers = [
         "Event", "Name", "Email", "Phone",
-        "Batch", "Graduation Year",
+        "Batch",
         "RSVP Status", "Payment Status", "Notes", "RSVPd At",
     ]
     ws.append(headers)
@@ -63,7 +63,6 @@ def _export_event_rsvps_excel(modeladmin, request, queryset):
                 rsvp.alumni.email,
                 rsvp.alumni.phone,
                 rsvp.alumni.batch,
-                rsvp.alumni.graduation_year,
                 rsvp.get_status_display(),
                 rsvp.get_payment_status_display(),
                 rsvp.notes,
