@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: SSA Alumni API
+  title: SRI SRI Alumni Association API
   version: 1.0.0
-  description: REST API for the SSA Alumni school directory. Authentication via Firebase
-    JWT (Bearer token).
+  description: REST API for the SRI SRI Alumni Association school directory. Authentication
+    via Firebase JWT (Bearer token).
   contact:
     name: SSA Team
   license:

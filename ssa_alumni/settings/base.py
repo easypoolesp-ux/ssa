@@ -109,9 +109,9 @@ REST_FRAMEWORK = {
 # drf-spectacular — OpenAPI schema generation
 # ---------------------------------------------------------------------------
 SPECTACULAR_SETTINGS = {
-    "TITLE": "SSA Alumni API",
+    "TITLE": "SRI SRI Alumni Association API",
     "DESCRIPTION": (
-        "REST API for the SSA Alumni school directory. "
+        "REST API for the SRI SRI Alumni Association school directory. "
         "Authentication via Firebase JWT (Bearer token)."
     ),
     "VERSION": "1.0.0",
